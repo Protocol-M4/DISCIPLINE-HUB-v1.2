@@ -1,4 +1,21 @@
 {
-  "weeks": {},
-  "unlocked": []
+  "weeks": {
+    "2026-02-15": {
+      "2026-02-20": {
+        "smoking": false,
+        "fastfood": false,
+        "noPorn": false,
+        "english": false
+      },
+      "2026-02-16": {
+        "noPorn": false
+      },
+      "2026-02-15": {
+        "wake730": false
+      }
+    }
+  },
+  "unlocked": [
+    "ironWill"
+  ]
 }
