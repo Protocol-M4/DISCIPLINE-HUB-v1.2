@@ -60,8 +60,8 @@ async function createWindow() {
 
   const isPackaged = app.isPackaged
   const packagedServerCandidates = [
-    resolve(process.resourcesPath, 'server.mjs'),
     resolve(process.resourcesPath, 'app.asar.unpacked', 'server.mjs'),
+    resolve(process.resourcesPath, 'server.mjs'),
     resolve(process.resourcesPath, 'app.asar', 'server.mjs'),
   ]
   const serverEntry = isPackaged
