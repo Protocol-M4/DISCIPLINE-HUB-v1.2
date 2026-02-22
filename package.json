@@ -1,0 +1,64 @@
+{
+  "name": "stark-hub",
+  "private": true,
+  "version": "1.4.0",
+  "description": "Stark Discipline Hub desktop app",
+  "main": "electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run icon:gen && vite build",
+    "preview": "vite preview",
+    "api": "node server.mjs",
+    "electron": "npm run icon:gen && electron .",
+    "electron:dev": "npm run icon:gen && cross-env NODE_ENV=development electron .",
+    "dist": "npm run build && electron-builder --mac --arm64 --dir",
+    "icon:gen": "node tools/generate-icon.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.7"
+  },
+  "build": {
+    "appId": "com.stark.disciplinehub",
+    "productName": "StarkHub",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "server.mjs",
+      "data.json",
+      "package.json"
+    ],
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.productivity"
+    }
+  },
+  "author": "Nikita"
+}
