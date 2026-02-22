@@ -58,7 +58,10 @@
       ],
       "icon": "build/icon.png",
       "category": "public.app-category.productivity"
-    }
+    },
+    "asarUnpack": [
+      "server.mjs"
+    ]
   },
   "author": "Nikita"
 }
