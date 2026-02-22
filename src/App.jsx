@@ -41,6 +41,7 @@ const ACHIEVEMENTS = [
 ]
 
 const initialState = { weeks: {}, unlocked: [] }
+const BASE_WEEK_START = new Date('2026-02-16T00:00:00')
 
 function getWeekStart(date = new Date()) {
   const d = new Date(date)
@@ -238,13 +239,13 @@ export default function App() {
   const [flash, setFlash] = useState('task')
   const [toasts, setToasts] = useState([])
 
-  const todayWeek = getWeekStart()
-  const currentWeekStart = useMemo(() => addDays(todayWeek, weekOffset * 7), [todayWeek, weekOffset])
+  const currentWeekStart = useMemo(() => addDays(BASE_WEEK_START, weekOffset * 7), [weekOffset])
   const currentWeekEnd = useMemo(() => addDays(currentWeekStart, 6), [currentWeekStart])
-  const weekNo = useMemo(() => getIsoWeekNumber(currentWeekStart), [currentWeekStart])
   const weekKey = formatDateKey(currentWeekStart)
   const weekData = store.weeks?.[weekKey] || {}
-  const todayIndex = (new Date().getDay() + 6) % 7
+  const today = new Date()
+  const todayIndex = (today.getDay() + 6) % 7
+  const isCurrentWeek = formatDateKey(currentWeekStart) === formatDateKey(getWeekStart(today))
   const rows = useMemo(() => getRows(), [])
 
   useEffect(() => {
@@ -339,28 +340,28 @@ export default function App() {
     }
   }
 
-  if (loading) return <div className="p-10 text-cyan-100">Загрузка...</div>
+  if (loading) return <div className="p-10 text-slate-700">Загрузка...</div>
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#060914] via-[#0d1220] to-[#1a2235] p-6 text-slate-100 md:p-10">
-      <header className="mb-8 flex flex-col items-center justify-between gap-6 rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-2xl md:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6 text-slate-900 md:p-10">
+      <header className="mb-8 flex flex-col items-center justify-between gap-6 rounded-3xl border border-white/70 bg-white p-6 shadow-xl md:flex-row">
         <div>
-          <h1 className="text-3xl font-semibold tracking-wide text-cyan-100">Stark Discipline Hub v1.4</h1>
-          <p className="mt-2 text-slate-300">Премиальная панель прогресса Сэра</p>
-          <p className="mt-3 text-5xl font-black text-cyan-200 drop-shadow-[0_0_18px_rgba(103,232,249,0.7)]">{computed.balance} RUB</p>
+          <h1 className="text-3xl font-semibold tracking-wide text-slate-900">Stark Discipline Hub v1.4</h1>
+          <p className="mt-2 text-slate-600">Премиальная панель прогресса Сэра</p>
+          <p className="mt-3 text-5xl font-black text-indigo-600">{computed.balance} RUB</p>
         </div>
         <Reactor progress={progress} flash={flash} />
       </header>
 
-      <section className="mb-6 rounded-3xl border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-xl">
+      <section className="mb-6 rounded-3xl border border-white bg-white p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Еженедельная сетка</h2>
           <div className="flex items-center gap-2">
-            <button onClick={() => setWeekOffset((v) => v - 1)} className="rounded-xl border border-white/20 bg-white/10 px-3 py-1 hover:bg-white/20">Назад</button>
-            <span className="text-sm text-slate-200">
-              Неделя #{weekNo}: {currentWeekStart.toLocaleDateString('ru-RU')} — {currentWeekEnd.toLocaleDateString('ru-RU')}
+            <button onClick={() => setWeekOffset((v) => v - 1)} className="rounded-xl border border-slate-200 bg-white px-3 py-1 text-slate-700 hover:bg-slate-50">Назад</button>
+            <span className="text-sm text-slate-600">
+              Неделя {weekOffset > 0 ? `+${weekOffset}` : weekOffset} (база: 16.02.2026–22.02.2026): {currentWeekStart.toLocaleDateString('ru-RU')} — {currentWeekEnd.toLocaleDateString('ru-RU')}
             </span>
-            <button onClick={() => setWeekOffset((v) => v + 1)} className="rounded-xl border border-white/20 bg-white/10 px-3 py-1 hover:bg-white/20">Вперед</button>
+            <button onClick={() => setWeekOffset((v) => v + 1)} className="rounded-xl border border-slate-200 bg-white px-3 py-1 text-slate-700 hover:bg-slate-50">Вперед</button>
           </div>
         </div>
 
@@ -368,24 +369,24 @@ export default function App() {
           <table className="w-full min-w-[980px] border-collapse text-sm">
             <thead>
               <tr>
-                <th className="border border-white/15 p-2 text-left">Задача / Штраф</th>
+                <th className="border border-slate-200 bg-slate-50 p-2 text-left">Задача / Штраф</th>
                 {DAYS.map((d, idx) => (
-                  <th key={d} className={`border p-2 ${idx === todayIndex ? 'border-cyan-300' : 'border-white/15'}`}>{d}</th>
+                  <th key={d} className={`border p-2 ${isCurrentWeek && idx === todayIndex ? 'border-indigo-400 bg-indigo-50/60' : 'border-slate-200'}`}>{d}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
-                  <td className={`border p-2 ${row.type === 'fine' ? 'border-white/15 text-rose-500 font-semibold' : 'border-white/15'}`}>
+                  <td className={`border p-2 ${row.type === 'fine' ? 'border-slate-200 text-rose-600 font-semibold bg-rose-50/40' : 'border-slate-200'}`}>
                     {row.title}{' '}
                     {row.type === 'task' ? (
                       <>
-                        <span className="text-cyan-300">+{row.reward}</span>
+                        <span className="text-emerald-600">+{row.reward}</span>
                         {computed.streakFire[row.id] ? <Flame size={15} className="ml-2 inline text-orange-400" /> : null}
                       </>
                     ) : (
-                      <span className="text-rose-400">-{row.amount}</span>
+                      <span className="text-rose-600">-{row.amount}</span>
                     )}
                   </td>
                   {DAYS.map((_, idx) => {
@@ -394,11 +395,11 @@ export default function App() {
                     const checked = Boolean(weekData[dateKey]?.[row.id])
                     const enabled = row.type === 'fine' ? true : isTaskAvailable(row, idx, date)
                     return (
-                      <td key={`${row.id}-${idx}`} className={`border p-2 text-center ${idx === todayIndex ? 'border-cyan-300' : 'border-white/15'}`}>
+                      <td key={`${row.id}-${idx}`} className={`border p-2 text-center ${isCurrentWeek && idx === todayIndex ? 'border-indigo-400 bg-indigo-50/60' : 'border-slate-200'}`}>
                         <button
                           disabled={!enabled}
                           onClick={() => updateCell(date, row, !checked)}
-                          className={`inline-flex h-7 w-7 items-center justify-center rounded-lg border transition ${checked ? (row.type === 'fine' ? 'border-rose-500 text-rose-500 bg-rose-500/10' : 'border-cyan-300 text-cyan-200 bg-cyan-500/10') : 'border-white/30 text-transparent'} disabled:opacity-30`}
+                          className={`inline-flex h-7 w-7 items-center justify-center rounded-lg border transition ${checked ? (row.type === 'fine' ? 'border-rose-500 text-rose-600 bg-rose-50' : 'border-emerald-500 text-emerald-600 bg-emerald-50') : 'border-slate-300 text-transparent'} disabled:opacity-30`}
                         >
                           {checked ? <X size={14} /> : '·'}
                         </button>
@@ -413,51 +414,51 @@ export default function App() {
       </section>
 
       <section className="mb-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
+        <div className="rounded-3xl border border-white bg-white p-4 shadow-lg">
           <h2 className="mb-3 text-lg font-semibold">Достижения</h2>
           <ul className="space-y-2 text-sm">
             {ACHIEVEMENTS.map((a) => (
-              <li key={a.id} className={store.unlocked?.includes(a.id) ? 'text-cyan-200' : 'text-slate-400'}>
+              <li key={a.id} className={store.unlocked?.includes(a.id) ? 'text-emerald-600' : 'text-slate-500'}>
                 {store.unlocked?.includes(a.id) ? '✅' : '⬜'} {a.title}
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
+        <div className="rounded-3xl border border-white bg-white p-4 shadow-lg">
           <h2 className="mb-3 text-lg font-semibold">J.A.R.V.I.S.</h2>
-          <button onClick={syncWithJarvis} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-500/10 px-3 py-2 hover:bg-cyan-500/20">
+          <button onClick={syncWithJarvis} className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-indigo-700 hover:bg-indigo-100">
             <Sparkles size={16} /> Синхронизировать с Джарвисом
           </button>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
+      <section className="rounded-3xl border border-white bg-white p-4 shadow-lg">
         <h2 className="mb-4 text-lg font-semibold">Динамика: факт vs идеал (+1000/день)</h2>
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={computed.chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.15)" />
-              <XAxis dataKey="dayLabel" tick={{ fill: '#dbeafe', fontSize: 12 }} />
-              <YAxis tick={{ fill: '#dbeafe', fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.25)" />
+              <XAxis dataKey="dayLabel" tick={{ fill: '#334155', fontSize: 12 }} />
+              <YAxis tick={{ fill: '#334155', fontSize: 12 }} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="balance" stroke="#67e8f9" strokeWidth={3} dot={false} name="Факт" connectNulls />
-              <Line type="monotone" dataKey="ideal" stroke="#cbd5e1" strokeDasharray="4 4" dot={false} name="Идеал" />
+              <Line type="monotone" dataKey="balance" stroke="#4f46e5" strokeWidth={3} dot={false} name="Факт" connectNulls />
+              <Line type="monotone" dataKey="ideal" stroke="#94a3b8" strokeDasharray="4 4" dot={false} name="Идеал" />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </section>
 
       {jarvisModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-white/20 bg-slate-900/80 p-5 shadow-2xl backdrop-blur-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-2xl rounded-3xl border border-white bg-white p-5 shadow-2xl">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-cyan-200">Jarvis Analysis</h3>
-              <button onClick={() => setJarvisModalOpen(false)} className="rounded-lg border border-white/20 p-1 hover:bg-white/10">
+              <h3 className="text-xl font-semibold text-indigo-700">Jarvis Analysis</h3>
+              <button onClick={() => setJarvisModalOpen(false)} className="rounded-lg border border-slate-200 p-1 hover:bg-slate-50">
                 <X size={16} />
               </button>
             </div>
-            <div className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-slate-200">
+            <div className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
               {jarvisLoading ? 'Синхронизация...' : jarvisText || 'Сэр, ожидаю команду на анализ.'}
             </div>
           </div>
@@ -466,7 +467,7 @@ export default function App() {
 
       <div className="fixed right-4 top-4 z-50 space-y-2">
         {toasts.map((toast) => (
-          <div key={toast.id} className="rounded-xl border border-cyan-300/40 bg-slate-900/85 px-4 py-2 text-sm shadow-glow backdrop-blur-lg">
+          <div key={toast.id} className="rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-lg">
             🏆 Достижение разблокировано: {toast.title}
           </div>
         ))}

@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  @apply m-0 min-h-screen font-mono text-slate-100;
+  @apply m-0 min-h-screen font-sans text-slate-900;
   background: radial-gradient(1200px 500px at 20% -10%, rgba(56, 189, 248, 0.2), transparent),
     radial-gradient(800px 400px at 90% 10%, rgba(147, 197, 253, 0.18), transparent),
-    #060914;
+    #f8fafc;
 }
