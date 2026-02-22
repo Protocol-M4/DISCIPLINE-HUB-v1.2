@@ -1,10 +1,10 @@
 import { createServer } from 'node:http'
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { dirname } from 'node:path'
 
 const PORT = process.env.PORT || 3001
-const DATA_FILE = resolve(process.cwd(), 'data.json')
+const DATA_FILE = process.env.DISCIPLINE_DATA_FILE
 
 const INITIAL_STATE = {
   weeks: {},
@@ -12,6 +12,12 @@ const INITIAL_STATE = {
 }
 
 async function ensureDataFile() {
+  if (!DATA_FILE) {
+    throw new Error('DISCIPLINE_DATA_FILE is not set')
+  }
+
+  await mkdir(dirname(DATA_FILE), { recursive: true })
+
   if (!existsSync(DATA_FILE)) {
     await writeFile(DATA_FILE, `${JSON.stringify(INITIAL_STATE, null, 2)}\n`, 'utf-8')
   }
@@ -56,6 +62,7 @@ const server = createServer(async (req, res) => {
     })
     req.on('end', async () => {
       try {
+        await ensureDataFile()
         const data = JSON.parse(body || '{}')
         await writeFile(DATA_FILE, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
         sendJson(res, 200, { ok: true })
@@ -68,6 +75,11 @@ const server = createServer(async (req, res) => {
 
   sendJson(res, 404, { error: 'not_found' })
 })
+
+if (!DATA_FILE) {
+  console.error('Missing DISCIPLINE_DATA_FILE env var for state storage')
+  process.exit(1)
+}
 
 server.listen(PORT, () => {
   console.log(`State API running on http://localhost:${PORT}`)
