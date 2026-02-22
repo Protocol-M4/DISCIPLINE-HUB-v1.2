@@ -34,7 +34,7 @@ async function waitForUrl(url, timeoutMs = 20000) {
   while (Date.now() - started < timeoutMs) {
     try {
       const res = await fetch(url)
-      if (res.ok || res.status < 500) return true
+      if (res.ok) return true
     } catch {}
     await new Promise((r) => setTimeout(r, 350))
   }
@@ -80,7 +80,10 @@ async function createWindow() {
     ? process.execPath
     : (packagedNodePath ?? process.execPath)
 
-  const serverEnv = { ...process.env }
+  const serverEnv = {
+    ...process.env,
+    DISCIPLINE_DATA_FILE: dataFilePath,
+  }
   if (!isDev || !isPlainNodeRuntime) {
     if (!packagedNodePath) serverEnv.ELECTRON_RUN_AS_NODE = '1'
   }
