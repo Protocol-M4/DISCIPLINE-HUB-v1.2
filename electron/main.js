@@ -32,6 +32,7 @@ async function waitForUrl(url, timeoutMs = 20000) {
 }
 
 async function createWindow() {
+  const dataFilePath = resolve(app.getPath('userData'), 'data.json')
   const iconPath = resolve(rootDir, 'build/icon.png')
   const win = new BrowserWindow({
     width: 1400,
@@ -47,7 +48,12 @@ async function createWindow() {
     },
   })
 
-  startProcess(process.execPath, ['server.mjs'])
+  startProcess(process.execPath, ['server.mjs'], {
+    env: {
+      ...process.env,
+      DISCIPLINE_DATA_FILE: dataFilePath,
+    },
+  })
 
   if (isDev) {
     startProcess(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', '5173'])
