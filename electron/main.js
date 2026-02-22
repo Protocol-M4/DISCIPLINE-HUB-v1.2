@@ -42,6 +42,7 @@ async function waitForUrl(url, timeoutMs = 20000) {
 }
 
 async function createWindow() {
+  const dataFilePath = resolve(app.getPath('userData'), 'data.json')
   const iconPath = resolve(rootDir, 'build/icon.png')
   const win = new BrowserWindow({
     width: 1400,
